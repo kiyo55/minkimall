@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>상품 검색결과</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1 th:text="'상품 검색결과 (' + ${lisize} + '건)'"></h1>
+
+<div th:if="${li != null && !li.isEmpty()}"><!-- li null/empty 여부 -->
+	<div class="ctgrLi">
+	    <div th:each="m : ${li}" class="eachPrdCtn">
+	    
+	        <input type="hidden" name="product_code" th:value="${m.product_code}">
+	        
+	        <div class="imgCtn">         
+		        <a th:href="@{/prd/viewPrd(product_code=${m.product_code})}">
+		            <img th:src="@{/img/}+${m.pimgStr}" width="100%" />
+		        </a>
+	        </div>
+	        
+	        <a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" 
+	        th:utext="'<strong>' + ${m.pname} + '</strong>'">
+			</a>
+	       
+	        <div class="basicInfo2"><!-- 가격 + 후기건수 + 🛒 버튼 -->
+	        
+		        <div style="width: 50%; display: flex;" th:text="${m.fmtPprice} + '원'"></div>&emsp;	        
+		        
+		        <div style="width: 25%;" th:if="${m.reviewCount > 0}">
+				    <span class="material-symbols-outlined iconBtn3">tooltip</span>
+				    <span th:text="${m.reviewCount}"></span>
+				</div>
+		        <!-- 문자 아닌 int이기에 !=null 조건 필요x -->			
+		        
+		        <div th:if="${session.username != null and session.loginType == 'user'}"><!-- 로그인 사용자에게만 🛒 버튼 출력 -->
+			        <div style="width: 25%;">	        
+				         <form action="/cart/addCart" method="post">
+				         	<input type="hidden" name="uid" th:value="${session.username}">
+						    <input type="hidden" name="product_code" th:value="${m.product_code}">
+						    <input type="hidden" name="pquantity" value="1">
+					    	<button type="submit" class="iconBtn2">
+								<span class="material-symbols-outlined">
+								add_shopping_cart
+								</span>
+							</button>
+				    	</form>			    	
+				    </div>
+				</div><!-- 🛒 버튼 끝 -->
+		    </div><!-- 가격 + 후기건수 + 🛒 버튼 끝 -->
+	             
+	        <div th:if="${m.pdelifee == 0}" th:text="'무료배송'"></div>
+	        
+	        <div>
+	        	<input type="hidden" th:value="${m.category}">
+				<a th:text="'#' + ${m.category}" type="button" class="subbtnsmall" 
+				th:href="@{/prd/prdListByCtgr(category=${m.category})}"></a>
+			</div>
+	        
+	    </div> <!-- eachPrdCtn 끝 -->
+	</div> <!-- allPrdCtn 끝 -->
+</div><!-- li null/empty 여부 끝 -->
+
+<div th:if="${li == null || li.isEmpty()}">
+    검색된 상품이 없습니다.    
+    <div style="margin: 15px">
+		<button type="button" class="addPrdBtn" onclick="location.href='/prd/prdList4user'">
+		➕ 전상품 보기
+		</button>
+	</div>    
+</div>
+
+<br>
+</div>    
+</section>
+<div  th:replace="include/bottom::footer"></div>
+</body>
+</html>

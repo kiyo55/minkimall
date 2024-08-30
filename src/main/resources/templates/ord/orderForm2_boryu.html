@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<script  src="http://code.jquery.com/jquery-1.10.2.js" ></script>
+<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
+<title>orderForm2</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>orderForm2</h1>
+
+<form action="/ord/addOrder" method="post" id="orderForm">
+	<input type="hidden" name="uid" th:value="${session.username}">
+
+    <div class="orderForm-container">
+    <h3>수령인 정보</h3>
+    
+	    <!-- 상단 -->
+	    <div style="width: 100%; display: flex; justify-content: flex-end; margin-bottom: 10px">
+	    	<a href="javascript:void(0);" onclick="clearFields()">🎁 수령인정보 직접입력</a>
+	        &nbsp; | &nbsp;
+	        <a href="javascript:void(0);" onclick="resetForm()">내정보 불러오기</a>
+	        &nbsp;
+	    </div>
+	    <!-- 상단 끝 -->
+    
+		<!--  정보입력란 -->		
+        <div class="form-group">
+            <label for="oname"><strong>oname</strong></label>
+            <input type="text" id="oname" name="oname" th:value="${userinfo.uname}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="otel"><strong>otel</strong></label>
+            <input type="text" id="otel" name="otel" th:value="${userinfo.utel}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="omail"><strong>omail</strong></label>
+            <input type="text" id="omail" name="omail" th:value="${userinfo.umail}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="oadd"><strong>oadd</strong></label>
+            <input type="text" id="oadd" name="oadd" th:value="${userinfo.uadd}" required>
+            &emsp;
+            <button type="button" onclick="execDaumPostcode()" class="findAddr">주소 찾기</button>
+        </div>
+					
+						<input type="hidden" id="postcode" name=postcode placeholder="우편번호">
+						<input type="hidden" id="extraAddress" name=extraAddress placeholder="참고항목">
+
+        <div class="form-group">
+            <label for="odetailAddress"><strong>odtlAddr</strong></label>
+            <input type="text" id="odetailAddress" name="odetailAddress" th:value="${userinfo.detailAddress}" required>
+        </div>
+        
+	<!--  정보입력란 끝 -->
+	
+		<div class="separator-horizontal"></div> <!------------------------- 수평선 -------------------------->
+	</div> <!-- 1번째 orderForm-container 끝 -->
+			
+    <button type="submit" class="button" >저장하기</button>
+	
+</form>
+
+</div>
+<br>
+</section> 
+<div  th:replace="include/bottom::footer"></div>
+
+<script>
+//수령인정보 직접입력 위해 값 비우기
+   function clearFields() {
+       document.getElementById('oname').value = '';
+       document.getElementById('otel').value = '';
+       document.getElementById('omail').value = '';
+       document.getElementById('oadd').value = '';
+       document.getElementById('odetailAddress').value = '';
+   }
+
+//내정보 불러오기
+   function resetForm() {
+       document.getElementById('orderForm').reset();
+   }
+</script>
+
+<!-- 주소입력 위한 api  -->
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    function execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var addr = ''; // 주소 변수
+                var extraAddr = ''; // 참고항목 변수
+
+                //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+                    addr = data.roadAddress;
+                } else { // 사용자가 지번 주소를 선택했을 경우(J)
+                    addr = data.jibunAddress;
+                }
+
+                // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+                if(data.userSelectedType === 'R'){
+                    // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                    // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                    if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                        extraAddr += data.bname;
+                    }
+                    // 건물명이 있고, 공동주택일 경우 추가한다.
+                    if(data.buildingName !== '' && data.apartment === 'Y'){
+                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                    }
+                    // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                    if(extraAddr !== ''){
+                        extraAddr = ' (' + extraAddr + ')';
+                    }
+                    // 조합된 참고항목을 해당 필드에 넣는다.
+                    document.getElementById("extraAddress").value = extraAddr;
+                
+                } else {
+                    document.getElementById("extraAddress").value = '';
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById('postcode').value = data.zonecode;
+                document.getElementById("oadd").value = addr; //변수명 맞추기
+                // 커서를 상세주소 필드로 이동한다.
+                document.getElementById("odetailAddress").focus(); //변수명 맞추기
+            }
+        }).open();
+    }
+</script>
+<!-- 주소입력 위한 api 끝  -->
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>작성 가능한 후기</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1 th:text="'작성 가능한 후기 (' + ${lisize} + '건)'"></h1>
+
+<div th:if="${li != null && !li.isEmpty()}"> <!-- li null/empty 여부 -->
+	<div class="ctgrLi"><!-- list 담은 div -->	
+		<div class="rvDiv2">
+			<button type="button" class="addPrdBtn" onclick="location.href='/review/myReview'">
+			📋 나의 후기</button>
+		</div>
+	
+		<!-- each -->
+		<div th:each="m : ${li}" class="rct">     
+		    
+		    <div class="prdInfo"><!-- 기본정보 -->    
+			    
+			    <div class="imgCtn3">
+			        <a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" target="_blank">
+		                <img th:src="@{/img/}+${m.pimgStr}" width="100">
+		            </a>
+			    </div>
+			        
+			    <div style="width: 70%; text-align: left;">
+			        <a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" 
+					 th:utext="'<strong>' + ${m.pname} + '</strong>'" target="_blank">
+					</a>				
+					<small th:text="'['+${m.oid}+']'"></small>
+					
+					<div>
+						<small th:text="'주문일: ' + ${m.fmtDateOnly}"></small>
+					</div>
+					
+					<div>
+					<a th:href="@{/review/reviewForm(oid=${m.oid})}" type="button" class="button">
+					후기 작성</a>
+					</div>
+					
+			    </div>
+			</div><!-- 기본정보 끝 -->
+		</div><!-- each 끝 -->
+	</div><!-- list 담은 div 끝 -->
+</div><!-- li null/empty 여부 끝 -->
+
+<div th:if="${li == null || li.isEmpty()}">
+    제품을 구매하고 후기를 남겨주세요~
+    <div style="margin: 15px">
+		<button type="button" class="addPrdBtn" onclick="location.href='/prd/prdList4user'">
+		➕ 상품 더보기
+		</button>
+	</div>    
+</div>
+
+<br>
+</div>
+</section>
+
+<div  th:replace="include/bottom::footer"></div>
+</body>
+</html>

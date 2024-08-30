@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>나의 주문목록</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>나의 주문목록</h1>
+
+<div th:if="${ordersByPaynum != null && !ordersByPaynum.isEmpty()}"> <!-- li null/empty 여부 -->
+
+	<!-- paynum 별로 감싸는 div -->
+	<div th:each="entry : ${ordersByPaynum}" class="paynumDiv">     
+	    
+	    <div class="basicInfo"><!-- 기본정보 -->    
+		    <div style="width: 30%; display: flex;">
+		    	결제번호 : 
+		        <a th:href="@{/ord/viewOrder(paynum=${entry.key})}">
+				    <strong th:text="${entry.key}"></strong>
+				</a>
+		    </div>
+		        
+		    <div style="width: 25%; text-align: right;">
+		        <span th:utext="'결제금액: <strong>' + ${entry.value.totalPay} + '원' + '</strong>'"></span>
+		    </div>
+
+		    <div style="width: 30%; text-align: right;">
+		        <span th:utext="'주문일: <strong>' + ${entry.value.odate} + '</strong>'"></span>
+		    </div>
+		    
+		    <div style="width: 15%; text-align: right;">		    
+		    <a th:href="@{/ord/viewOrder(paynum=${entry.key})}" type="button" class="subbtnsmall">상세보기</a>
+		    </div>
+		    		        
+		</div><!-- 기본정보 끝 -->
+		
+	    <!-- paynum에 해당하는 상품 리스트 -->
+	    <div th:each="oitem : ${entry.value.products}" class="eachOitem">
+	        
+	        <!-- 각 주문 상품 -->
+	        <div style="width: 150px; margin-left: 5px;">
+	            <a th:href="@{/prd/viewPrd(product_code=${oitem.product_code})}" target="_blank">
+	                <img th:src="@{/img/}+${oitem.pimgStr}" width="120" />
+	            </a>
+	        </div>
+	        
+	        <div style="width: 200px; text-align: left; margin: 10px;">
+	            <div>
+	                <strong th:text="${oitem.pname}"></strong>
+	                <small th:text="'[' + ${oitem.oid} + ']'"></small>
+	            </div>  
+	            	            
+	            <div>
+	                <span th:text="${oitem.fmtPprice} + '원 * ' + ${oitem.pquantity} + '개'"></span>
+	            </div>   
+	                     
+	            <div>
+	                <span th:text="${oitem.pdelifee == 0 ? '[무료배송]' : '배송비 ' + oitem.fmtPdelifee + '원'}"></span>
+	            </div>
+	        </div>    
+	        
+	        <div style="width: 150px; text-align: left; margin: 10px;">
+	        <mark th:text="${oitem.ostatus}"></mark>
+	        </div>
+	        
+	        <div style="width: 150px; text-align: right; margin: 10px;"><!-- 🛒 + 후기 -->
+	            <div>
+	                <form action="/cart/addCart" method="post">
+	                	<input type="hidden" name="uid" th:value="${session.username}">
+	                    <input type="hidden" name="product_code" th:value="${oitem.product_code}">
+	                    <input type="hidden" name="pquantity" value="1">
+	                    <button type="submit" class="button">장바구니 담기</button>
+	                </form>    
+	            </div>
+	            
+	            <!-- 	주문 도착 + 후기 미작성인 경우 작성 버튼 출력 -->
+	            <div th:if="${oitem.ostatus == '도착' and oitem.beReviewed == 0}">
+		            <button type="button" class="subbtn" 
+					        th:attr="data-url=@{'/review/reviewForm?oid=' + ${oitem.oid}}"
+					        onclick="location.href=this.getAttribute('data-url')">
+					    후기 작성하기
+					</button>		                
+	            </div>	            
+	            
+	            <div th:if="${oitem.ostatus == '도착' and oitem.beReviewed == 1}" style="text-align: center;">
+				    후기 작성 완료
+	            </div>
+	            
+	        </div><!-- 🛒 + 후기 끝 -->
+	    </div><!-- 각 주문상품 끝 -->
+	</div><!-- paynum별 주문 끝 -->
+</div><!-- li null/empty 여부 끝 -->
+
+<div th:if="${ordersByPaynum == null || ordersByPaynum.isEmpty()}">
+    주문내역이 비어있습니다.
+</div>
+
+<div style="margin: 15px">
+	<button type="button" class="addPrdBtn" onclick="location.href='/prd/prdList4user'">
+	➕ 상품 더보기
+	</button>
+</div>
+
+<br>
+</div>
+</section>
+
+<div  th:replace="include/bottom::footer"></div>
+
+</body>
+</html>

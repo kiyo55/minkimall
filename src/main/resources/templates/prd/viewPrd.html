@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title th:text="${product.pname} + ' 상세보기'"></title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+    <br>
+    <div align="center">
+
+<div class="prdDetails">
+    <div class="prdDetails">
+        <div class="sangjwa">
+            <img th:src="@{/img/}+${product.pimgStr}" width="100%" />
+        </div>        
+        <div class="sangu">
+        
+        	<!-- 장바구니 form -------------------------------------------------------------->        	
+            <form action="/cart/addCart" method="post">
+                <input type="hidden" name="product_code" th:value="${product.product_code}">
+                <div>
+                    <strong th:text="${product.pname}"></strong>
+                    <small th:text="${product.pdesc}"></small>                    
+                </div>
+                
+                <div>
+					<span class="material-symbols-outlined" style="color: #999;">
+					sell
+					</span>
+				
+                    <input type="hidden" name="pprice" th:value="${product.pprice}">  
+                    <span th:text="${product.fmtPprice} + '원'"></span>
+                </div>
+                
+                <div>
+                <span class="material-symbols-outlined" style="color: #999;">
+				local_shipping
+				</span>
+                    <input type="hidden" name="pdelifee" th:value="${product.pdelifee}">
+                    <span th:text="${product.pdelifee == 0 ? '무료배송' : product.fmtPdelifee + '원'}"></span>
+                </div>
+                                
+                <div class="total-price">
+                    <input type="hidden" name="hab" id="habInput" 
+                    th:value="${product.pprice * product.pquantity + product.pdelifee}">
+                    <span id="habText"></span>
+                </div>
+				
+				<div>
+                주문수량:
+                <input type="number" name="pquantity" class="quantity-input" 
+                th:value="${product.pquantity}" th:text="'/ 최대 ' + ${product.pstock} + '개'"  min="1" th:max="${product.pstock}">
+				</div>
+				
+				<input type="hidden" th:value="${product.category}">
+				<a th:text="'#' + ${product.category}"  
+				th:href="@{/prd/prdListByCtgr(category=${product.category})}"></a>
+				                
+                <input type="hidden" name="uid" th:value="${session.username}">
+                
+				<!-- 사용자 로그인 중인 경우 바로 구매 가능 -->
+                <div style="margin-top: 50px;"
+                 th:if="${session.username != null and session.loginType == 'user'}">
+                	 <button type="submit" class="button">장바구니에 담기</button>&emsp;
+                     <button type="button" class="subbtn">바로 구매</button>                        
+                </div>
+			</form><!-- 장바구니 form 끝 ----------------------------------------------------------------------------->
+               
+                <!-- 관리자 로그인 또는 로그인하지 않은 경우 먼저 로그인하도록 -->
+			<div style="margin-top: 50px;"
+              th:unless="${session.username != null and session.loginType == 'user'}">
+                 구매하실 경우 사용자 계정 <span style="font-weight: bold;">로그인</span> 또는 <span style="font-weight: bold;">회원가입</span>이 필요합니다.
+                 <br>
+                 <button type="button" class="button" onclick="location.href='/login/loginForm'">로그인</button>
+                 &emsp;
+                 <button type="button" class="subbtn" onclick="location.href='/user/joinForm'">회원가입</button>
+    	 	</div><!-- 로그인 관련 끝 -->
+        </div> <!-- sangu 끝 -->
+    </div>  <!-- sangdan 끝 -->
+    
+<div class="separator-horizontal"></div> <!------------------------- 수평선 -------------------------->
+        
+    <div style="width: 800px;"><!-- pdetail -->
+    	<div th:if="${product.pdetail != null} and !${product.pdetail.isEmpty()}">
+	        <div th:utext="${product.pdetail}"></div> <!-- `utext`를 사용하여 HTML 태그도 렌더링 -->
+	        <div class="separator-horizontal"></div> <!------------------------- 수평선 -------------------------->
+        </div>
+    </div><!-- pdetail 끝 -->
+  
+</div> <!-- prdDetails 끝 -->
+    
+<h3 th:text="'후기 (' + ${revListSize} + '건)'"></h3>
+
+	<div th:if="${session.username != null and session.loginType == 'user'}" class="rvDiv">
+		<button type="button" class="addPrdBtn" onclick="location.href='/review/reviewable'">
+		➕ 후기 작성</button>
+    </div>    
+
+<div th:if="${reviewList != null && !reviewList.isEmpty()}"><!-- li null/empty 여부 -->
+	<!--     후기 -->
+	<div class="allRv">
+		<!--     각 후기 -->
+	    <div th:each="rv : ${reviewList}" style="margin-bottom: 20px;">
+	    
+		    <div class="basicInfo2">
+			    <div style="width: 85%;">
+				    <strong th:text="${rv.uname}+'님:'"></strong>
+				 </div>
+				 
+				 <div style="width: 15%; display: flex; justify-content: flex-end;">
+				 	<small th:text="${rv.rdate}"></small>
+				 </div>
+		     </div>
+		     
+		     <div style="background-color: #e7e7e7; padding: 20px; border-radius: 5px;">
+				<div th:utext="${rv.rcontent}" class="rcontent"></div>
+		     </div>	     
+	    </div><!-- 각 후기 끝 -->   
+	</div><!-- 후기 끝 -->	
+</div><!-- li null/empty 여부 끝 -->
+
+<div th:if="${rcmList != null && !rcmList.isEmpty()}"><!-- li null/empty 여부 -->
+<!-- 추천 -->
+<div class="rcm">
+	<div class="separator-horizontal"></div> <!------------------------- 수평선 -------------------------->
+
+	<div style="width: 100%;">
+		<div th:if="${session.username != null and session.loginType == 'user'}">
+		    <span th:text="${session.username} + '님,'"></span>
+		</div>
+		<h3 style="margin-top: 0px;">이런 상품이 어떨까요?</h3>
+	</div>
+
+    <div th:each="rcmP : ${rcmList}" class="eachPrdCtn">
+    
+        <input type="hidden" name="product_code" th:value="${rcmP.product_code}">
+        
+        <div class="imgCtn">         
+	        <a th:href="@{/prd/viewPrd(product_code=${rcmP.product_code})}">
+	            <img th:src="@{/img/}+${rcmP.pimgStr}" width="100%" />
+	        </a>
+        </div>
+        
+        <a th:href="@{/prd/viewPrd(product_code=${rcmP.product_code})}" 
+        th:utext="'<strong>' + ${rcmP.pname} + '</strong>'">
+		</a>
+       
+        <div class="basicInfo2"><!-- 가격 + 후기건수 + 🛒 버튼 -->
+        
+	        <div style="width: 50%; display: flex;" th:text="${rcmP.fmtPprice} + '원'"></div>&emsp;	        
+	        
+	        <div style="width: 25%;" th:if="${rcmP.reviewCount > 0}">
+			    <span class="material-symbols-outlined iconBtn3">tooltip</span>
+			    <span th:text="${rcmP.reviewCount}"></span>
+			</div>
+	        <!-- 문자 아닌 int이기에 !=null 조건 필요x -->
+	    </div><!-- 가격 + 후기건수 + 🛒 버튼 끝 -->             
+        <div th:if="${rcmP.pdelifee == 0}" th:text="'무료배송'"></div>        
+    </div> <!-- eachPrdCtn 끝 -->
+</div> <!-- allPrdCtn 끝 -->
+<!-- 추천 끝 -->
+</div><!-- li null/empty 여부 끝 -->
+
+        <br>
+    </div>
+</section>
+<div th:replace="include/bottom::footer"></div>
+
+<script>
+//결제액 미리 계산
+document.addEventListener('DOMContentLoaded', function() {	
+	//HTML 요소 중 입력값 선택해 변수에 저장
+    const quantityInput = document.querySelector('.quantity-input');	
+	const priceInput = document.querySelector('input[name="pprice"]');
+    const deliveryFeeInput = document.querySelector('input[name="pdelifee"]');
+    
+    //위의 입력값을 숫자로 변환 후 연산 시 이용할 값의 변수명 선언
+    const price = parseFloat(priceInput.value);
+    const deliveryFee = parseFloat(deliveryFeeInput.value);
+    
+    //출력값 선언
+    const habInput = document.getElementById('habInput'); //저장값
+    const habText = document.getElementById('habText'); //표시값
+    
+    //입출력값 제대로 찍히는지 확인    
+    console.log('priceInput:', priceInput);
+    console.log('deliveryFeeInput:', deliveryFeeInput);
+    console.log('quantityInput:', quantityInput);
+    console.log('habInput:', habInput);
+    console.log('habText:', habText);
+    
+    // 천원단위에 콤마 찍기
+    function formatNumber(number) {
+        return number.toLocaleString();
+    }
+
+    // 계산하기
+    function updateTotal() {
+        const quantity = parseInt(quantityInput.value, 10);
+        const total = (price * quantity) + deliveryFee;
+        habInput.value = total;
+        habText.innerHTML = '예상결제액: <strong>' + formatNumber(total) + '원</strong>';
+    }
+
+    // 초기 합계 계산
+    updateTotal();
+
+    // 주문 수량이 변경될 때마다 합계 업데이트
+    quantityInput.addEventListener('input', updateTotal);
+});
+</script>
+
+</body>
+</html>

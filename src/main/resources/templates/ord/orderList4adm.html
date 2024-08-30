@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>전체 주문목록</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1 th:text="'전체 주문목록 (' + ${lisize} + '건)'">orderList</h1>
+
+<div class="allOrdCtn">
+
+<div style="width: 100%; margin-bottom: 10px">
+주문상태별 <span style="font-weight: bold;">주문 건수 및 비중</span>:
+</div>
+
+<div id="statusBar" class="sttBar">
+	
+    <div th:each="cnt : ${cntLi}" id="eachStatus" 
+         th:style="'width:' + ${cnt.perStatus} + '%; display: flex; align-items: center; 
+         justify-content: center; padding: 5px; text-align: center;'">
+         
+        <a th:text="${cnt.ostatus} + ' (' + ${cnt.cntStatus} + '건, ' + ${cnt.perStatus} + '%)'" class="bijung"></a>
+    </div>
+</div>
+
+<div style="width: 100%; display: flex; justify-content: flex-end; margin-bottom: 30px;">
+    <button type="button" class="addPrdBtn">🔍 검색</button>
+</div>
+
+	<table style="width: 1200px;">
+		<tr class="tr_color">
+		
+			<th>no</th>
+			<th>결제번호</th>			
+			<th>주문번호</th>				
+			<th>pcode</th>
+			<th>상품명</th>
+			
+		    <th>판매가</th>		    
+		    <th>수량</th>	
+		    <th>배송비</th>			    
+		    <th>from</th>
+		    <th>to</th>
+		    
+		    <th>주문일</th>		    
+		    <th>업뎃일</th>		    
+		    <th>rv</th>
+		    <th>상태</th>
+		</tr>
+			
+		<tr th:each="m, stat : ${li}" class="tr_color">	
+			
+			<td th:text="${stat.count}"></td>
+			<td th:text="${m.paynum}"/>			
+			<td th:text="${m.oid}"/>		
+			<td th:text="${m.product_code}"/>		
+			<td th:text="${m.pname}"/>		
+			<td th:text="${m.fmtPprice} + '원'"/>		
+			
+			<td th:text="${m.pquantity}"/>	
+			<td th:text="${m.fmtPdelifee} + '원'"/>	
+			<td th:text="${m.uname}"/>
+			<td th:text="${m.oname}"/>
+			<td th:text="${m.fmtDateOnly}"/>
+			<td th:text="${m.fmtOtime}"/>
+			<td th:text="${m.beReviewed == 1 ? 'Y' : 'N'}"/>
+			
+			<td>
+				<form action="/ord/updOrdStatus" method="post" 
+				onsubmit="return validateStatusChange(this);">
+				
+	                <select class="selectStatus" name="ostatus" id="orderStatus">
+
+	                    <option th:value="${m.ostatus}" th:text="${m.ostatus}"></option>
+	                    
+	                    <option value="결제완료">결제완료</option>
+	                    <option value="상품준비">상품준비</option>
+	                    <option value="발송완료">발송완료</option>
+	                    <option value="도착">도착</option>
+	                    <option value="환불">환불</option>
+	                </select>&nbsp;
+                
+					<!-- 기존 상태 (서버에서 동적으로 렌더링) -->
+					<input type="hidden" id="currentStatus" th:value="${m.ostatus}"> 
+	                <input type="hidden" name="oid" th:value="${m.oid}">
+	                
+					<button type="submit" class="subbtnsmall">변경</button>
+				</form>
+			</td>
+		</tr>		
+	</table>
+
+<div id="changeStatusSucceed" class="changeStatusSucceed" style="display: none;">
+상태가 변경되었습니다.
+</div>
+
+<div id="changeStatusFailed" class="changeStatusFailed" style="display: none;">
+변경사항이 없습니다.
+</div>
+
+</div>
+<br>
+</div>    
+</section>
+<div  th:replace="include/bottom::footer"></div>
+
+<script>
+//상태 변경
+    function validateStatusChange(form) {
+        const currentStatus = document.getElementById('currentStatus').value;
+        const selectedStatus = form.ostatus.value;
+
+        // 변경사항이 없을 때
+        if (currentStatus === selectedStatus) {
+            showFailedPopup();
+            return false; // 폼 제출 중단
+        }
+
+        // 변경되었을 때 폼 제출 후 성공 팝업 띄우기
+        const xhr = new XMLHttpRequest();
+        xhr.open(form.method, form.action, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                showSuccessPopup();
+            }
+        };
+
+        // 폼 데이터를 직렬화하고 서버로 전송
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData).toString();
+        xhr.send(params);
+
+        return false; // 폼 제출 중단 (AJAX로 처리하므로)
+    }
+
+    function showSuccessPopup() {
+        const popup = document.getElementById('changeStatusSucceed');
+        popup.style.display = 'block';
+        popup.classList.add('show');
+        
+        setTimeout(function() {
+            popup.classList.remove('show');
+            popup.style.display = 'none';
+        }, 5000); // 팝업이 5초 후에 사라짐
+    }
+
+    function showFailedPopup() {
+        const popup = document.getElementById('changeStatusFailed');
+        popup.style.display = 'block';
+        popup.classList.add('show');
+
+        setTimeout(function() {
+            popup.classList.remove('show');
+            popup.style.display = 'none';
+        }, 5000); // 팝업이 5초 후에 사라짐
+    }
+</script>
+
+<script>
+//비중 시각화
+    document.addEventListener('DOMContentLoaded', function() {
+        const allStatus = document.querySelectorAll('#eachStatus');
+
+        allStatus.forEach(function(statusBar) {
+            const pastelColor = generatePastelColor();
+            statusBar.style.backgroundColor = pastelColor;
+        });
+
+        // 파스텔 색상 생성 함수
+        function generatePastelColor() {
+            const r = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 빨강)
+            const g = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 초록)
+            const b = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 파랑)
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }   
+    });
+</script>
+
+</body>
+</html>

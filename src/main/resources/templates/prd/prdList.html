@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>상품목록</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>상품목록</h1>
+
+<div class="allPrdCtn">
+	<!-- 상품 추가 버튼을 테이블 위에 배치 -->
+	<div class="addDiv">
+	    <button type="button" class="addPrdBtn" onclick="location.href='/prd/addPrdForm'">➕ 상품 추가</button>
+	</div>
+
+<div id="category" class="sttBar">	
+    <div th:each="cnt : ${cntLi}" id="eachCategory" 
+         th:style="'width:' + ${cnt.percentage} + '%; display: flex; align-items: center; 
+         justify-content: center; padding: 5px; text-align: center;'">
+         
+        <a th:text="${cnt.category} + ' (' + ${cnt.prdCntByCtgr} + '건, ' + ${cnt.percentage} + '%)'" 
+           th:href="@{/prd/prdListByCtgr(category=${cnt.category})}" class="bijung"></a>
+    </div>
+</div><!-- category 끝 -->
+
+<!-- 페이지 나누고 이동 -->
+<div th:text="${lisize} + ' / ' + ${totalRecords} + '건이 표시됩니다.'"></div>
+
+<div th:if="${totalPages > 1}" class="bulliPage">
+    <a  th:if="${currentPage !=1}"
+    th:href="@{/prd/prdList(pageNumber=1)}"
+    th:text="'[첫 페이지]'"></a>&emsp;
+    
+    <div th:each="i : ${#numbers.sequence(((currentPage - 1) / 10) * 10 + 1, totalPages)}">
+    	<div th:if="${i >= ((currentPage - 1) / 10) * 10 + 1 && i <= totalPages}">
+    	
+    	<!-- 현재 페이지인 경우 비활성화 -->
+            <span th:if="${i == currentPage}" 
+                  th:text="'[' + ${i} + ']'" 
+                  style="color: gray; cursor: default; font-weight: bold;"></span>
+            
+            <!-- 현재 페이지가 아닌 경우 링크 활성화 -->
+            <a th:if="${i != currentPage}"
+               th:href="@{/prd/prdList(pageNumber=${i})}" 
+               th:text="'[' + ${i} + ']'"></a>&emsp;
+    		           
+           </div>
+    </div>
+    <a th:if="${currentPage !=totalPages}" 
+    th:href="@{/prd/prdList(pageNumber=${totalPages})}"
+    th:text="'[마지막 페이지]'"></a>&emsp;
+</div>
+<!-- 페이지 나누고 이동 끝 -->
+
+	<table style="width: 900px;">
+		<tr class="tr_color">
+			<th>코드</th> 		
+		    <th>사진</th>	    	    
+		    <th>상품명</th>
+		    <th>분류</th>
+		    
+		    <th>설명</th>		    
+			<th>판매가</th>	
+			<th>배송비</th>
+			<th>한도</th>
+			<th>등록일</th>		
+		</tr>
+			
+		<tr th:each="m : ${li}" class="tr_color">			
+			<td th:text="${m.product_code}"/>
+			
+			<td>
+				<a th:href="@{/prd/viewPrd(product_code=${m.product_code})}">
+		            <img th:src="@{/img/}+${m.pimgStr}" width="100" />
+		        </a>
+			</td>
+			
+			<td>
+				<a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" 
+		        th:utext="'<strong>' + ${m.pname} + '</strong>'">
+				</a>   
+			</td>
+			
+			<td th:text="${m.category}"/>
+			<td th:text="${m.pdesc}"/>
+			
+			<td th:text="${m.fmtPprice} + '원'"/>
+			<td th:text="${m.fmtPdelifee} + '원'"></td>
+			<td th:text="${m.pstock}"/>
+			<td th:text="${m.fmtPdate}"/>		
+	<!-- 		fmt값은 vo에서 선언한 getFmt...에서 가져옴	 -->
+		</tr>
+		
+	</table>
+
+</div>
+
+<br>
+</div>    
+</section>
+<div  th:replace="include/bottom::footer"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const categories = document.querySelectorAll('#eachCategory');
+
+        categories.forEach(function(category) {
+            const pastelColor = generatePastelColor();
+            category.style.backgroundColor = pastelColor;
+        });
+
+        // 파스텔 색상 생성 함수
+        function generatePastelColor() {
+            const r = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 빨강)
+            const g = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 초록)
+            const b = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 파랑)
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }        
+        /*
+        Math.floor((Math.random() * 127) + 127): 
+        각 색상 성분(R, G, B)을 127 이상으로 설정하여 채도가 낮고 밝은 색을 생성합니다. 
+        이 범위는 127부터 255까지이며, 127을 더해서 최소한의 밝기를 보장합니다.
+        
+		파스텔 톤: 파스텔 색상은 기본적으로 매우 밝기 때문에, 
+		각 RGB 값이 높은 값에 가까운 범위에서 랜덤하게 설정됩니다.
+        */        
+    });
+</script>
+
+</body>
+</html>

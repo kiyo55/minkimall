@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<script  src="http://code.jquery.com/jquery-1.10.2.js" ></script>
+<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>주문서</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>주문서</h1>
+
+<!-- totalPay & 주문버튼-->		
+<div class="payDiv">	    
+	<input type="hidden" name="totalPay" th:value="${totalPay}">
+	<span th:utext="'총결제액: <strong>' + ${fmtTotalPay} + '원</strong>'"></span>	
+     &emsp;
+     
+    <div class="kg_pay_btn" 
+    th:data-price="${totalPay}" 
+    th:data-payKey="${payKey}" >
+		<button class="button" type="button" th:onclick="kg_request_pay()">
+		결제하기
+		</button>
+	</div>		    	
+</div>
+
+<div class="ordInfo"> <!-- 수령인 정보 + 변경 btn + 주문상품 -->
+	
+	<div style="width: 100%;">
+		<h3>주문상품</h3>	
+	</div>
+	
+		<!-- each orderItem -->
+		<div th:each="oitem, iter : ${orderItems}" class="eachOitem2"><!--	iter: 소계 출력용 -->
+	
+		    <input type="hidden" name="oid" th:value="${oitem.oid}">				    
+		    <input type="hidden" name="cartid" th:value="${oitem.cartid}">				    
+	    	<input type="hidden" name="product_code" th:value="${oitem.product_code}">
+			    
+		    <div style="width: 150px; text-align: left;">
+			    <a th:href="@{/prd/viewPrd(product_code=${oitem.product_code})}" target="_blank">
+				<img th:src="@{/img/}+${oitem.pimgStr}" width="120" />
+				</a>
+		    </div>
+   
+		    <div style="width: 120px; text-align: left; margin-left: 15px;">
+			    <a th:href="@{/prd/viewPrd(product_code=${oitem.product_code})}" 
+				 th:utext="'<strong>' + ${oitem.pname} + '</strong>'" target="_blank">
+				</a>
+		    </div>
+			    
+		    <div style="width: 100px; text-align: right; margin-right: 15px;">
+			    <input type="hidden" name="pprice" th:value="${oitem.pprice}">
+			    <span th:text="${oitem.fmtPprice} + '원'"></span>
+		    </div>
+
+			<div style="width: 80px; text-align: left;">
+			    <input type="hidden" name="pquantity" th:value="${oitem.pquantity}">
+			    <span th:text="'* ' + ${oitem.pquantity} + '개'"></span>
+		    </div>				    
+		    
+		    <div style="width: 150px; text-align: right;">				    
+			    <input type="hidden" name="pdelifee" th:value="${oitem.pdelifee}">
+		        <span th:text="${oitem.pdelifee == 0 ? '[무료배송]' : '+ 배송비 ' + oitem.fmtPdelifee + '원'}"></span>
+		    </div>
+		    
+		    <div style="width: 150px; text-align: right; margin-right: 15px;">				    
+			    <input type="hidden" name="subtotal" th:value="${hapList[iter.index]}">
+		        <span th:utext="'= ' + ${fmtHapList[iter.index]} + '원'"></span>
+		    </div>
+			    
+		</div> <!-- each orderItem 끝 -->
+
+<div class="separator-horizontal"></div> <!------------------------- 수평선 -------------------------->
+
+	<h3>수령인 정보
+		<button class="subbtnsmall">변경</button>
+	</h3>
+	
+    <div class="recvInfo"> <!-- 수령인 정보 -->
+    
+        <div class="form-group">
+            <label for="oname"><strong>이름:</strong></label>
+            <input type="hidden" id="oname" name="oname" th:value="${order.oname}">
+            <span th:text="${order.oname}"></span>
+
+            <label for="otel"><strong>연락처:</strong></label>
+            <input type="hidden" id="otel" name="otel" th:value="${order.otel}">
+            <span th:text="${order.otel}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="omail"><strong>메일주소:</strong></label>
+            <input type="hidden" id="omail" name="omail" th:value="${order.omail}">
+            <span th:utext="${order.omail}+'<small> (결제내역 수신할 메일주소입니다.)</small>'"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="oadd"><strong>수령지:</strong></label>
+            <input type="hidden" id="oadd" name="oadd" th:value="${order.oadd}+${order.odetailAddress}">
+            <span th:text="${order.oadd}+', '+${order.odetailAddress}"></span>
+        </div>			
+	</div> <!-- 수령인 정보 끝 -->
+	</div> <!-- 수령인 정보 + 변경 btn + 주문상품 끝 -->		
+
+</div>
+<br>
+</section> 
+<div  th:replace="include/bottom::footer"></div>
+
+<script th:inline="javascript">
+jQuery.ajaxSetup({cache:false});
+
+  function kg_request_pay() {
+//전달할 필수 데이터. 추가는 가능
+    const selectedGoodsPrice = document.querySelector(".kg_pay_btn").getAttribute("data-price");
+    const selectedPayKey= document.querySelector(".kg_pay_btn").getAttribute("data-payKey");
+
+ // kg이니시스 결제 API
+    const IMP = window.IMP; // 생략가능
+    IMP.init(selectedPayKey); // 고객사 식별코드
+
+ // Thymeleaf 변수를 자바스크립트 변수로 할당
+ 	//파트너에 보낼 값 (필수)
+    const pnames = /*[[${pnames}]]*/ 'default_pnames';    
+    const oname = /*[[${order.oname}]]*/ 'default_oname';
+    const omail = /*[[${order.omail}]]*/ 'default_omail';    
+    const otel = /*[[${order.otel}]]*/ 'default_otel';
+    
+    //내부 조회용 값 (선택)
+    const uid = /*[[${order.uid}]]*/ 'default_uid';
+    const oadd = /*[[${order.oadd}]]*/ 'default_oadd';
+    const odetailAddress = /*[[${order.odetailAddress}]]*/ 'default_odetailAddress';
+        
+    //주문내역 상세보기 위해 각 상품의 cartid, product_code, pquantity를 배열로 수집한 값 (필수)
+    const cartidArray = [];
+    const productCodeArray = [];
+    const quantityArray = [];
+    
+ // th:each 반복문에서 생성된 각 상품의 데이터를 js 배열에 추가
+    document.querySelectorAll('input[name="cartid"]').forEach(function(input) {
+        cartidArray.push(input.value);
+    });
+
+    document.querySelectorAll('input[name="product_code"]').forEach(function(input) {
+        productCodeArray.push(input.value);
+    });
+
+    document.querySelectorAll('input[name="pquantity"]').forEach(function(input) {
+        quantityArray.push(input.value);
+    });
+    
+    // IMP.request_pay(param, callback) 결제창 호출. 파트너에 보낼 값
+    IMP.request_pay({
+    	pg: "html5_inicis",
+        merchant_uid: "H" + new Date().getTime(), // 결제번호
+        name: "[밍키몰] " + pnames,
+        amount: selectedGoodsPrice, // 숫자 타입
+        buyer_name: oname,
+        buyer_email: omail,
+        buyer_tel: otel
+    },       
+    
+    function (rsp) { // callback
+        console.log('rsp: ', rsp);
+    
+        if (rsp.success) { // 결제 성공시 백엔드에 보낼 값
+            const orderData = {
+           		//배열 처리
+           	    cartidList: cartidArray,
+           	    productCodeList: productCodeArray,
+           	    pquantityList: quantityArray,     
+           	    
+           	    //공통값
+           	    paynum: rsp.merchant_uid, // 결제번호
+				omethod: rsp.pay_method, // 결제수단. 내부에서 지정한 값이 아닌, 실제 사용자가 선택한 결제수단 (card/point)
+				totalPay: rsp.paid_amount, // 결제금액
+        		pnames: rsp.name,				
+				uid: uid,
+				oname: oname,                
+				omail: omail,
+				otel: otel,
+				oadd: oadd + ', ' + odetailAddress,
+				ostatus: '결제완료'           	    
+            };
+            console.log('orderData: ', orderData);
+            
+            //결제 데이터 서버로 전송
+            $.ajax({
+                url: '/ord/submitOrder',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(orderData), // JSON 데이터 전달 위해 사용되는 메소드. 1건이면 (result), 배열이면 ([result])
+                success: function (res) {
+	                console.log('res: ', res);
+	                console.log("Order submitted successfully");
+	                alert('결제가 완료되었습니다.'); // 결제가 성공했을 때만 알림
+	                location.href = res;
+                },
+                error: function (xhr, status, error) {
+                    console.log('error: ', error);
+                    console.error("Error submitting order:", error);
+                    alert('결제 처리 중 오류가 발생했습니다.'); //코드 등 내부 문제
+                }
+            });
+        } else {
+            var msg = '결제 실패';
+            msg += '\n실패 사유: ' + rsp.error_msg; //예: 결제창 열었다 닫으면 사용자 취소에 해당
+            alert(msg);
+        }
+    });
+}
+</script>
+
+</body>
+</html>

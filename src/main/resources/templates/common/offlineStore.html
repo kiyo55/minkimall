@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>매장정보</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>매장정보</h1>
+<div>오프라인 매장도 방문해보세요~</div>
+
+<div id="map" class="storeMap"></div>
+<strong th:text="${storeAddr} +', '+ ${storeName}"></strong>
+<!-- <div class="bannerImg"></div> -->
+
+<br>
+</div>
+</section>
+
+<div th:replace="include/bottom::footer"></div>
+
+<!-- Thymeleaf에서 appkey 등 JavaScript로 전달 -->
+<script th:inline="javascript">
+	// Thymeleaf에서 모델 속성을 문자열로 전달
+    var appkey = /*[[${appkey}]]*/ '[[${appkey}]]';
+    var storeAddr = /*[[${storeAddr}]]*/ '[[${storeAddr}]]';
+    var storeName = /*[[${storeName}]]*/ '[[${storeName}]]';
+</script>
+
+<!-- 카카오 지도 API 로드 -->
+<script type="text/javascript" th:src="'//dapi.kakao.com/v2/maps/sdk.js?appkey='+${appkey}+'&libraries=services'"></script>
+
+<script>
+    var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+        mapOption = {
+            center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+            level: 8 // 지도의 확대 레벨
+        };  
+
+    // 지도를 생성합니다    
+    var map = new kakao.maps.Map(mapContainer, mapOption); 
+
+    // 주소-좌표 변환 객체를 생성합니다
+    var geocoder = new kakao.maps.services.Geocoder();
+
+    // 주소로 좌표를 검색합니다
+    geocoder.addressSearch(storeAddr, function(result, status) {
+        // 정상적으로 검색이 완료됐으면 
+        if (status === kakao.maps.services.Status.OK) {
+            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+            // 결과값으로 받은 위치를 마커로 표시합니다
+            var marker = new kakao.maps.Marker({
+                map: map,
+                position: coords
+            });
+
+            // 인포윈도우로 장소에 대한 설명을 표시합니다
+            var infowindow = new kakao.maps.InfoWindow({
+                content: '<div style="width:200px;text-align:center;padding:3px 0; position: relative;"><strong>' +
+                storeName + '</strong></div>'
+            });
+            infowindow.open(map, marker);
+
+            // 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
+            map.setCenter(coords);
+        } 
+    });
+</script>
+
+</body>
+</html>

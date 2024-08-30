@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>밍키몰</title>
+</head>
+
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<div class="coverImg">
+	<div style="width: 800px; margin: 30px 60px 0; font-size: 40px; text-align: left;">
+	<mark style="background-color: #96a9fe; color: white;">키링</mark>
+	</div>
+	
+	<div style="width: 100%; margin: -20px 60px; color: white; font-size: 40px; text-align: left;">
+	얼마나 있어도
+	<span style="color: #96a9fe;">모자라죠</span>..?!
+	</div>
+</div>
+
+<span style="font-weight: bold;">카테고리</span>별로 탐색해보세요~
+
+<div class="ctgrLi">
+	<div th:each="ctgr : ${ctgrList}" style="margin: 10px 5px;">
+		<a th:text="'#' + ${ctgr.category}" 
+		th:href="@{/prd/prdListByCtgr(category=${ctgr.category})}" class="ctgrTag"></a>
+	</div>
+</div>
+
+<h3>인기 급상승 제품</h3>
+<div class="ctgrLi">
+    <div th:each="rcmP : ${rcmList}" class="eachPrdCtn">    
+        <input type="hidden" name="product_code" th:value="${rcmP.product_code}">        
+        <div class="imgCtn">         
+	        <a th:href="@{/prd/viewPrd(product_code=${rcmP.product_code})}">
+	            <img th:src="@{/img/}+${rcmP.pimgStr}" width="100%" />
+	        </a>
+        </div>        
+        <a th:href="@{/prd/viewPrd(product_code=${rcmP.product_code})}" 
+        th:utext="'<strong>' + ${rcmP.pname} + '</strong>'">
+		</a>       
+        <div class="basicInfo2"><!-- 가격 + 후기건수 + 🛒 버튼 -->        
+	        <div style="width: 50%; display: flex;" th:text="${rcmP.fmtPprice} + '원'"></div>&emsp;	        
+	        <div style="width: 25%;" th:if="${rcmP.reviewCount > 0}">
+			    <span class="material-symbols-outlined iconBtn3">tooltip</span>
+			    <span th:text="${rcmP.reviewCount}"></span>
+			</div>
+	        <!-- 문자 아닌 int이기에 !=null 조건 필요x -->	        
+	        <div th:if="${session.username != null and session.loginType == 'user'}"><!-- 로그인 사용자에게만 🛒 버튼 출력 -->
+		        <div style="width: 25%;">	        
+			         <form action="/cart/addCart" method="post">
+			         	<input type="hidden" name="uid" th:value="${session.username}">
+					    <input type="hidden" name="product_code" th:value="${rcmP.product_code}">
+					    <input type="hidden" name="pquantity" value="1">
+				    	<button type="submit" class="iconBtn2">
+							<span class="material-symbols-outlined">
+							add_shopping_cart
+							</span>
+						</button>
+			    	</form>			    	
+			    </div>
+			</div><!-- 🛒 버튼 끝 -->
+	    </div><!-- 가격 + 후기건수 + 🛒 버튼 끝 -->             
+        <div th:if="${rcmP.pdelifee == 0}" th:text="'무료배송'"></div>        
+        <div>
+        	<input type="hidden" th:value="${rcmP.category}">
+			<a th:text="'#' + ${rcmP.category}" type="button" class="subbtnsmall" 
+			th:href="@{/prd/prdListByCtgr(category=${rcmP.category})}"></a>
+		</div>        
+    </div> <!-- eachPrdCtn 끝 -->
+</div>
+
+<h3>솔직한 후기</h3>
+<div class="ctgrLi"><!-- list 담은 div -->
+
+	<div th:each="rct : ${rctRvLi}" class="rct">     
+	    
+	    <!-- 상품정보 -->
+	    <div class="prdInfo">	    	    
+		    <div class="imgCtn3">             
+		        <a th:href="@{/prd/viewPrd(product_code=${rct.product_code})}" target="_blank">
+	                <img th:src="@{/img/}+${rct.pimgStr}" width="100">
+	            </a>
+		    </div>
+		        
+		    <div style="flex-grow: 1; text-align: left;">
+		        <a th:href="@{/prd/viewPrd(product_code=${rct.product_code})}" 
+				 th:utext="'<strong>' + ${rct.pname} + '</strong>'" target="_blank">
+				</a>
+				<small th:text="'['+${rct.uname}+'님]'"></small>
+				<div>
+					<small th:text="'등록일: ' + ${rct.rdate}"></small>
+				</div>
+		    </div>
+		</div><!-- 상품정보 끝 -->
+		
+	    <!-- 후기 내용 -->
+	    <div class="rvCtn">	         	        
+	        <div th:utext="${rct.rcontent}" class="rcontent"></div>
+	    </div><!-- 후기 내용 끝 -->
+	    
+	</div><!-- each 끝 -->
+</div><!-- list 담은 div 끝 -->
+
+<br>
+</div>
+</section>
+<div  th:replace="include/bottom::footer"></div>

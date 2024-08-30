@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>상품 추가</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>상품 추가</h1>
+
+	<div class="listDiv">
+	    <button type="button" class="addPrdBtn" onclick="window.open('/prd/prdList', '_blank')">
+	    📋 상품목록</button>
+	</div>	
+	<br>
+
+<form action="/prd/addPrd" 
+method="post" enctype="multipart/form-data">
+
+<table class="addPrdTable">		
+	<tr>	
+		<th>상품명</th>
+		<td><input type="text"  name="pname" required></td>
+	</tr>
+		
+	<tr>	
+		<th>사진</th>
+		<td><input type="file" name="pimg" required></td>
+	</tr>
+	
+	<tr>	
+		<th>분류</th>
+		<td>		
+			<select name="category"  id="categorySelect" required onchange="handleCategoryChange()">                 
+                 <option value="키링">키링</option>
+                 <option value="와펜">와펜</option>
+                 <option value="인형">인형</option>
+                 <option value="포카">포카</option>
+                 <option value="브로치핀">브로치핀</option>
+                 <option value="custom">직접입력</option>
+             </select>
+             <input name="categoryInput" id="categoryInput" style="display:none;" placeholder="직접입력">
+		</td>
+	</tr>
+	
+	<tr>	
+		<th>설명</th>
+		<td><input type="text"  name="pdesc" value="귀염뽀짝"></td>
+	</tr>
+		
+	<tr>	
+		<th>판매가</th>
+		<td><input type="text"  name="pprice" value="5000">원</td>
+	</tr>
+	
+	<tr>	
+		<th>건당주문가능수량</th>
+		<td><input type="text"  name="pstock" value="10"><small>* 사용자가 주문 건당 담을 수 있는 수량입니다.</small></td>
+	</tr>
+		
+	<tr>	
+		<th>배송비</th>
+		<td><input type="text"  name="pdelifee" value="0">원</td>
+	</tr>
+	
+	<tr>	
+	<th>상세설명</th>		
+	<td>
+	<textarea  id="summernote" name="pdetail">이렇게 활용할 수 있어요~</textarea>
+	</td>
+</tr>
+</table>
+
+<input type=submit  value=등록 class=button>
+&emsp;
+<input type="reset"  value="다시 입력" class=subbtn>
+
+</form>
+
+<br>
+</div>
+</section>
+<div  th:replace="include/bottom::footer"></div>
+
+<script>
+//카테고리 외 직접입력 시
+    function handleCategoryChange() {
+        var selectElement = document.getElementById('categorySelect');
+        var inputElement = document.getElementById('categoryInput');
+        
+        if (selectElement.value === 'custom') {
+            inputElement.style.display = 'inline';
+            inputElement.required = true;
+            selectElement.name = '';  // 선택한 값을 폼에서 제거
+            inputElement.name = 'category';  // 입력한 값을 폼에 추가
+        } else {
+            inputElement.style.display = 'none';
+            inputElement.required = false;
+            selectElement.name = 'category';  // 선택한 값이 폼에 포함
+            inputElement.name = 'categoryInput';  // 입력 필드를 폼에서 제외
+        }
+    }
+</script>
+
+<!-- libraries(jQuery, bootstrap) -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<!-- summernote -->
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+
+<script>
+//작성란
+   $(document).ready(function() {
+	   $('#summernote').summernote({
+           placeholder: '상세설명 작성란입니다.',
+           tabsize: 2,
+           height: 300
+       });
+
+       // 콘솔에 summernote 인스턴스 출력
+       console.log('summernote instance:', $summernote.summernote('code'));
+   });
+</script>
+
+</body>
+</html>

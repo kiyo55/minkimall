@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>주문일별 통계</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>주문일별 통계</h1>
+
+<div style="width: 800px; margin-bottom: 30px;">
+주문일 기준 <span style="font-weight: bold;">주문 건수 및 해당 주문상품 총건수</span>입니다.
+</div>
+
+<table style="width: 800px;">
+<tr class="tr_color">
+	<th>순번</th>
+	<th>일자</th>
+    <th>주문건수</th>  
+    <th>상품건수</th>
+</tr>	
+<tr th:each="m, stat : ${li}" class="tr_color">	
+	<td th:text="${stat.count}"></td>
+	<td th:text="${m.fmtDateOnly}"/>	
+	<td th:text="${m.ordCnt}"/>	
+	<td th:text="${m.prdQntSum}"/>	
+</tr>
+</table>
+
+<br>
+</div>    
+</section>
+<div  th:replace="include/bottom::footer"></div>
+
+</body>
+</html>

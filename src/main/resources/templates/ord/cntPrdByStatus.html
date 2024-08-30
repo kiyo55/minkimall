@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>주문상품 상태</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>주문상품 상태</h1>
+
+<div style="width: 800px; margin-bottom: 10px;">
+주문상태별 <span style="font-weight: bold;">상품 총건수 및 비중</span>입니다.
+
+	<div id="statusBar" class="sttBar">
+		
+	    <div th:each="cnt : ${cntLi}" id="eachStatus" 
+	         th:style="'width:' + ${cnt.perStatus} + '%; display: flex; align-items: center; 
+	         justify-content: center; padding: 5px; text-align: center;'">
+	         
+	        <a th:text="${cnt.ostatus} + ' (' + ${cnt.cntStatus} + '건, ' + ${cnt.perStatus} + '%)'" class="bijung"></a>
+	    </div>
+	</div>
+</div>
+
+<table style="width: 800px;">
+<tr class="tr_color">
+	<th>순번</th>
+	<th>상태</th>
+    <th>상품 총건수</th>  
+    <th>비중</th>
+</tr>
+	
+<tr th:each="cnt, stat : ${cntLi}" class="tr_color">	
+	
+	<td th:text="${stat.count}"></td>
+	<td th:text="${cnt.ostatus}"/>	
+	<td th:text="${cnt.cntStatus}"/>	
+	<td th:text="${cnt.perStatus} + '%'"/>	
+</tr>
+</table>
+
+<br>
+</div>    
+</section>
+<div  th:replace="include/bottom::footer"></div>
+
+<script>
+//비중 시각화
+    document.addEventListener('DOMContentLoaded', function() {
+        const allStatus = document.querySelectorAll('#eachStatus');
+
+        allStatus.forEach(function(statusBar) {
+            const pastelColor = generatePastelColor();
+            statusBar.style.backgroundColor = pastelColor;
+        });
+
+        // 파스텔 색상 생성 함수
+        function generatePastelColor() {
+            const r = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 빨강)
+            const g = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 초록)
+            const b = Math.floor((Math.random() * 127) + 127);  // 127 ~ 255 범위에서 랜덤 값 (밝은 파랑)
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }   
+    });
+</script>
+
+</body>
+</html>

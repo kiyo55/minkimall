@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>상세내역</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<div class="viewOrd"><!-- 주문자, 수령인, 주문•결제 내역 -->
+
+<h3>주문•결제 내역</h3>
+<div style="width: 100%;"><!-- 하단 -->
+
+	<div class="basicInfo2"><!-- 공통정보 -->
+		<div style="width: 50%;">
+			<div class="form-group">
+			    <label for="paynum"><strong>결제번호:</strong></label>
+			    <span th:text="${order.paynum}"></span>
+			</div>			
+			<div class="form-group">
+			    <label for="pnames"><strong>상품명:</strong></label>
+			    <span th:text="${order.pnames}"></span>			    
+			</div>
+		</div><!-- 50% -->
+		
+		<div style="width: 50%;">		
+			<div class="form-group">
+			    <label for="odate"><strong>주문일시:</strong></label>
+			    <span th:text="${order.fmtOdate}"></span>
+			</div>			
+			<div class="form-group">
+			    <label for="totalPay"><strong>총결제액:</strong></label>
+			    <span th:text="${order.fmtTotalPay} + '원'"></span>
+			</div>
+		</div><!-- 50% -->
+	</div><!-- 공통정보 끝 -->
+	
+<div th:each="oitem : ${orderList}" class="eachOitem"><!-- 각 주문상품 -->
+        
+	<div style="width: 150px; margin-left: 5px;">
+	    <a th:href="@{/prd/viewPrd(product_code=${oitem.product_code})}" target="_blank">
+		<img th:src="@{/img/}+${oitem.pimgStr}" width="120" />
+		</a>
+    </div>
+    
+    <div style="width: 200px; text-align: left; margin: 10px;">
+		<div>
+			<a th:href="@{/prd/viewPrd(product_code=${oitem.product_code})}" 
+	        th:utext="'<strong>' + ${oitem.pname} + '</strong>'" 
+	        target="_blank"></a>
+	        <small th:text="'[' + ${oitem.oid} + ']'"></small>
+	    </div>  
+	    
+		<div>
+		    <span th:text="${oitem.fmtPprice} + '원 * ' + ${oitem.pquantity} + '개'"></span>
+	    </div>   
+	             
+		<div>
+		    <span th:text="${oitem.pdelifee == 0 ? '[무료배송]' : '배송비 ' + oitem.fmtPdelifee + '원'}"></span>
+	    </div>
+    </div>    
+    
+    <div style="width: 150px; text-align: left; margin: 10px;">
+    	<mark th:text="${oitem.ostatus}"></mark>
+    </div>
+    
+    <div style="width: 150px; text-align: right; margin: 10px;"><!-- 🛒 + 후기 -->
+	    <div>
+	    <form action="/cart/addCart" method="post">
+	    	<input type="hidden" name="uid" th:value="${session.username}">
+		    <input type="hidden" name="product_code" th:value="${oitem.product_code}">
+		    <input type="hidden" name="pquantity" value="1">
+	    	<button type="submit" class=button>장바구니 담기</button>
+	    </form>	
+	    </div>     
+	    
+	    <!-- 	주문 도착 + 후기 미작성인 경우 작성 버튼 출력 -->
+		<div th:if="${oitem.ostatus == '도착' and oitem.beReviewed == 0}">
+	            <button type="button" class="subbtn" 
+				        th:attr="data-url=@{'/review/reviewForm?oid=' + ${oitem.oid}}"
+				        onclick="location.href=this.getAttribute('data-url')">
+				    후기 작성하기
+				</button>
+         </div>  
+		<div th:if="${oitem.ostatus == '도착' and oitem.beReviewed == 1}" style="text-align: center;">
+	    	후기 작성 완료
+        </div>
+	            
+    </div><!-- 🛒 + 후기 끝 -->
+</div><!-- 각 주문상품 끝 -->
+</div><!-- 하단 끝 -->	
+
+<div class="separator-horizontal"></div> <!------------------------- 수평선 -------------------------->
+
+	<div class="basicInfo2"><!-- 상단 -->
+	
+		<div style="width: 50%;"><!-- 상좌 -->
+		<h3>주문자</h3>
+			<div class="form-group">
+	            <label for="uname"><strong>이름:</strong></label>
+	            <span th:text="${order.uname}"></span>
+			</div>
+			<div class="form-group">
+	            <label for="utel"><strong>연락처:</strong></label>
+	            <span th:text="${order.utel}"></span>
+	        </div>
+		</div><!-- 상좌 끝 -->
+		
+		<div class="separator-vertical"></div><!---------- 수직선 ----------->
+		
+		<div style="width: 50%;"><!-- 상우 -->
+		<h3>수령인</h3>
+			<div class="form-group">
+	            <label for="oname"><strong>이름:</strong></label>
+	            <span th:text="${order.oname}"></span>
+			</div>
+			<div class="form-group">
+	            <label for="otel"><strong>연락처:</strong></label>
+	            <span th:text="${order.otel}"></span>
+	        </div>	        
+			<div class="form-group">
+	            <label for="oadd"><strong>수령지:</strong></label>
+	            <span th:text="${order.oadd}"></span>
+	        </div>		
+		
+		</div><!-- 상우 끝 -->	
+	</div><!-- 상단 끝 -->
+</div><!-- 주문자, 수령인, 주문.결제 정보 끝 -->
+
+<div style="margin: 15px">
+	<button type="button" class="addPrdBtn" onclick="location.href='/prd/prdList4user'">
+	➕ 상품 더보기
+	</button>
+</div>
+
+<br>
+</div>
+</section>
+
+<div  th:replace="include/bottom::footer"></div>
+</body>
+</html>

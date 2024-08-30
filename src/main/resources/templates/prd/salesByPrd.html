@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>상품별 매출</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>상품별 매출</h1>
+
+<div class="bulliBar">
+	
+	<div id="ordQntByPrd" style="width: 50%;">
+		<a href="/prd/ordQntByPrd">상품별 주문량</a>
+	</div>
+	
+	<div id="salesByPrd" style="width: 50%;">
+	<a href="/prd/salesByPrd">상품별 매출</a>
+	</div>
+</div>
+
+<div style="width: 800px;">
+주문상태가 <span style="font-weight: bold;">도착</span>인 건에 한해 합산된 상품별 매출입니다.
+</div>
+
+<div th:utext="'총계: <strong>' + ${fmtTotalSales} + '원</strong>'" 
+style="width: 800px; margin-bottom: 20px; text-align: right;">
+</div>
+
+<table style="width: 800px;">
+	<tr class="tr_color">
+		<th>순번</th>
+		<th>상품코드</th>
+	    <th>상품명</th>
+	    <th>판매가</th>
+	    <th>누적 판매량</th>
+	    <th>누적 매출액</th>
+	</tr>
+		
+	<tr th:each="m, stat : ${li}" class="tr_color">	
+		
+		<td th:text="${stat.count}"></td>
+		<td th:text="${m.product_code}"/>
+		
+		<td>
+			<a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" 
+	        th:utext="'<strong>' + ${m.pname} + '</strong>'">
+			</a>   
+		</td>
+		
+		<td th:text="${m.fmtPprice} + '원'"/>	
+		<td th:text="${m.pquantity}"/>	
+		<td th:text="${m.fmtTotalAmt} + '원'"/>	
+	</tr>		
+</table>
+	
+<br>
+</div>    
+</section>
+<div  th:replace="include/bottom::footer"></div>
+
+<script>
+// 현재 페이지 URL을 확인
+const currentPage = window.location.pathname;
+
+// 요소 선택
+const ordQntByPrdDiv = document.getElementById('ordQntByPrd');
+const salesByPrdDiv = document.getElementById('salesByPrd');
+
+// URL에 따라 색상 변경
+if (currentPage === '/prd/ordQntByPrd') {
+    ordQntByPrdDiv.style.backgroundColor = '#d4d4d4';
+    salesByPrdDiv.style.backgroundColor = '#f8f8f8';
+} else if (currentPage === '/prd/salesByPrd') {
+    salesByPrdDiv.style.backgroundColor = '#d4d4d4';
+    ordQntByPrdDiv.style.backgroundColor = '#f8f8f8';
+}
+</script>
+
+</body>
+</html>

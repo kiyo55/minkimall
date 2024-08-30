@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>장바구니</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1 th:text="'장바구니 (' + ${lisize} + '건)'"></h1>
+
+<div th:if="${li != null && !li.isEmpty()}"> <!-- li null/empty 여부 -->
+
+<form action="/ord/order" method="post">
+	<input type="hidden" name="uid" th:value="${session.username}">
+	
+	<div class="mediaList"><!-- mediaList -->
+		<div class="ordDiv"> <!-- totalPay & 주문버튼-->
+			<input type="hidden" name="totalPay" id="totalPayInput" th:value="${totalPay}"><!-- 	totalPay값 입력 받을 영역 -->
+		    <span id="totalPayText"></span><!-- totalPay값, 즉 예상결제액 표시할 영역 -->	
+		    &emsp;
+		    <button type="submit" id="orderButton" class="button">주문하기</button>
+		</div>	
+	
+		<div th:each="m : ${li}" class="mediaObject"><!-- js에 전달할 class="mediaObject" -->
+		
+			<!-- 			1 -->
+				<div style="align-items: left; margin: 10px;">
+					<input type="checkbox" name="ckbox" th:value="${m.cartid}" checked>
+				</div>	
+					<input type="hidden" name="cartIds" th:value="${m.cartid}">
+					<!-- cartIds: /ord/order에 전달할 값 = 선택된 cart들 -->				
+				
+				<div style="width: 150px;">
+					<a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" target="_blank">
+			            <img th:src="@{/img/}+${m.pimgStr}" width="150" />
+			        </a>
+				 </div>			
+			<!-- 			1 끝 -->
+			
+			<!-- 			2 -->
+				<div style="margin: 10px; text-align: left; width: 220px;">
+					<div>
+						 <a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" 
+						 th:utext="'<strong>' + ${m.pname} + '</strong>'" target="_blank">
+						</a>
+						<small th:text="'[' + ${m.cartid} + ']'"></small>
+					</div>
+					
+					<!-- 	수직 정렬 위해 span 대신 div 씀. span 쓰면서 수직은 유지하려면 각각 div으로 감싸기 -->
+					<div>						
+			        <input type="hidden" name="pprice" th:value="${m.pprice}">	
+			        <span th:text="'판매가: ' + ${m.fmtPprice} + '원'"></span>
+		        	</div>			
+		        	            			            
+			        <div>
+			        <input type="hidden" name="pdelifee" th:value="${m.pdelifee}">
+			        <span th:text="${m.pdelifee == 0 ? '무료배송❕' : '배송비: ' + m.fmtPdelifee + '원'}"></span>
+			        </div>
+		            <!-- 	수직 정렬 위해 span 대신 div 씀 -->
+				</div>				
+			<!-- 			2 끝 -->			
+			
+			<!-- 			3 -->
+				<div style="width: 200px; text-align: left;">
+					주문수량: 
+						<input type="number" name="pquantity" class="quantity-input" 
+						th:value="${m.pquantity}" th:text="'/ ' + ${m.pstock} + '개'" min="1" th:max="${m.pstock}">
+						<!-- class="quantity-input" 통해 입력된 주문량을 js에 전달 -->
+				</div>
+				
+				<div style="margin: 10px 10px auto auto; text-align: right; width: 120px;">				    
+					<span class="item-total" th:text="'소계: ' + (${m.pprice * m.pquantity + m.pdelifee}) + '원'">소계</span>
+				</div>
+				
+				<div style="margin-left: auto; margin-right: 10px; text-align: right;">					
+						<a th:href="@{/cart/delCart(cartid=${m.cartid})}" >✖️</a>
+				</div>
+			<!-- 			3 끝 -->
+			
+		</div> <!-- mediaObject 끝 -->
+	</div> <!-- mediaList 끝 -->
+
+</form>
+</div> <!-- li null/empty 여부 끝 -->
+<div th:if="${li == null || li.isEmpty()}">
+    장바구니가 비어있습니다.
+</div>
+
+<div style="margin-top: 10px">
+	<button type="button" class="addPrdBtn" onclick="location.href='/prd/prdList4user'">
+	➕ 상품 더보기
+	</button>	
+</div>
+
+</div>
+<br>
+</section> 
+<div  th:replace="include/bottom::footer"></div>
+
+<script>
+//소계, 총계 계산
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+        const checkboxes = document.querySelectorAll('input[name="ckbox"]');
+        const totalPayInput = document.getElementById('totalPayInput');
+        const totalPayText = document.getElementById('totalPayText');
+        const orderButton = document.getElementById('orderButton');
+        // id 기준으로 인식하여 input, button tag 모두 적용
+        
+        // 천 단위에 콤마 찍기
+        function formatNumber(number) {
+            return number.toLocaleString();
+        }
+        
+        // 계산하기
+        function updateTotals() {
+            let totalPay = 0;
+            let checkedCount = 0;
+            quantityInputs.forEach(input => {
+                const mediaObject = input.closest('.mediaObject');
+                const checkbox = mediaObject.querySelector('input[name="ckbox"]');
+                
+                const price = parseFloat(mediaObject.querySelector('input[name="pprice"]').value);
+                const quantity = parseInt(input.value, 10);
+                const deliveryFee = parseFloat(mediaObject.querySelector('input[name="pdelifee"]').value);
+                
+                const itemTotal = (price * quantity) + deliveryFee;                
+                
+                // 소계 업데이트
+                const totalSpan = mediaObject.querySelector('.item-total');
+				totalSpan.innerHTML = '소계: <strong>' + formatNumber(itemTotal) + '원</strong>'; //innerHTML
+                
+				// 체크된 경우만 합산
+                if (checkbox.checked) {
+                    totalPay += itemTotal;
+                    checkedCount++; // 체크된 항목 수 증가
+                }                
+                
+            });
+            totalPayInput.value = totalPay;
+            totalPayText.innerHTML = '예상결제액: <strong>' + formatNumber(totalPay) + '원</strong>'; //innerHTML
+            orderButton.textContent = checkedCount + '건 주문하기'; // 버튼에 체크된 건수 표시 - button tag 쓴 경우 textContent
+			// orderButton.value = checkedCount + '건 주문하기'; // input tag 쓴 경우 value            
+        }
+		
+     	// 수량 변경 시 계산 업데이트
+        quantityInputs.forEach(input => {
+            input.addEventListener('input', updateTotals);
+        });
+		
+    	 // 체크박스 변경 시 계산 업데이트
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateTotals);
+        });
+     	
+        updateTotals();
+    });
+</script>
+
+<script>
+//체크된 cart 없을 경우 주문 버튼 비활성화
+document.addEventListener('DOMContentLoaded', function() {
+    const orderButton = document.getElementById('orderButton');
+    const checkboxes = document.querySelectorAll('input[name="ckbox"]');
+
+    function updateOrderButtonState() {
+        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+        orderButton.disabled = !anyChecked;
+    }
+
+    // 체크박스 상태 변경 시 호출
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateOrderButtonState);
+    });
+
+    // 초기 상태 업데이트
+    updateOrderButtonState();
+});
+</script>
+
+<script>
+//체크된 cart만 내부에 전달
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+    	
+        // 제출 전, 체크된 항목들만 cartIds로 추가
+        const selectedIds = [];
+        document.querySelectorAll('input[name="ckbox"]:checked').forEach(function(checkbox) {
+            selectedIds.push(checkbox.value);
+        });
+		
+        console.log ('selectedIds: ', selectedIds);        
+        
+        // 모든 hidden cartIds 제거
+        document.querySelectorAll('input[name="cartIds"]').forEach(function(input) {
+            input.remove();
+        });
+
+        // 선택된 항목들만 cartIds로 추가
+        selectedIds.forEach(function(id) {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'cartIds';
+            hiddenInput.value = id;
+            form.appendChild(hiddenInput);
+        });
+    });
+});
+</script>
+
+</body>
+</html>

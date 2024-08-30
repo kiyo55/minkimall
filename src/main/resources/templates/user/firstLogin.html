@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>회원가입 완료</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<h1>회원가입 완료</h1>
+
+<span th:utext="'<strong>'+${welcome} + '</strong>님,'"></span>
+<div>즐거운 쇼핑을 위해 로그인해 보시겠습니까?</div>
+<br>
+
+<form action="/login/login" method="post">
+
+	<div class="form-container">		
+        <input type="hidden" id="user" name="loginType" value="user">
+        				
+		<div class="form-group">
+	        <label for="username">ID:</label>
+	        <input type="text" id="username" name="username" required>
+	    </div>
+	    
+	    <div class="form-group">
+	        <label for="password">비밀번호:</label>
+	        <input type="password" id="password" name="password" required>
+	    </div>
+	</div>		
+	<br>	
+	<button type="submit" class=button>로그인</button>
+</form>
+
+<br>
+</div>
+</section>
+
+<div  th:replace="include/bottom::footer"></div>
+</body>
+</html>

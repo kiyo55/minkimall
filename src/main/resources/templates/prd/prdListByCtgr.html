@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<link rel="icon" href="/img/img2/favicon.png" type="image/png">
+<title>카테고리별 상폼 보기</title>
+</head>
+<body>
+<div th:replace="include/top"></div>
+<section>
+<br>
+<div align="center">
+
+<div class="ctgrLi">
+	<div th:each="ctgr : ${ctgrList}" style="margin: 10px 5px;">
+		<a th:text="'#' + ${ctgr.category}" 
+		th:href="@{/prd/prdListByCtgr(category=${ctgr.category})}" 
+		style="border: 1px solid #999; border-radius: 50px; padding: 5px 8px; font-size: 15px;"
+		></a>
+	</div>
+</div>
+
+<div style="margin-bottom: 15px;"
+th:utext="'<strong>#' + ${ctgr} +'</strong> 카테고리에 상품 <strong>'+ ${lisize} + '건</strong>이 있습니다.'">
+</div>
+
+<div class="ctgrLi">
+
+    <div th:each="m : ${li}" class="eachPrdCtn">
+    
+        <input type="hidden" name="product_code" th:value="${m.product_code}">
+        
+        <div class="imgCtn">         
+	        <a th:href="@{/prd/viewPrd(product_code=${m.product_code})}">
+	            <img th:src="@{/img/}+${m.pimgStr}" width="100%" />
+	        </a>
+        </div>
+        
+        <a th:href="@{/prd/viewPrd(product_code=${m.product_code})}" 
+        th:utext="'<strong>' + ${m.pname} + '</strong>'">
+		</a>
+       
+        <div class="basicInfo2"><!-- 가격 + 후기건수 + 🛒 버튼 -->
+        
+	        <div style="width: 50%; display: flex;" th:text="${m.fmtPprice} + '원'"></div>&emsp;	        
+	        
+	        <div style="width: 25%;" th:if="${m.reviewCount > 0}">
+			    <span class="material-symbols-outlined iconBtn3">tooltip</span>
+			    <span th:text="${m.reviewCount}"></span>
+			</div>
+	        <!-- 문자 아닌 int이기에 !=null 조건 필요x -->			
+	        
+	        <div th:if="${session.username != null and session.loginType == 'user'}"><!-- 로그인 사용자에게만 🛒 버튼 출력 -->
+		        <div style="width: 25%;">	        
+			         <form action="/cart/addCart" method="post">
+			         	<input type="hidden" name="uid" th:value="${session.username}">
+					    <input type="hidden" name="product_code" th:value="${m.product_code}">
+					    <input type="hidden" name="pquantity" value="1">
+				    	<button type="submit" class="iconBtn2">
+							<span class="material-symbols-outlined">
+							add_shopping_cart
+							</span>
+						</button>
+			    	</form>			    	
+			    </div>
+			</div><!-- 🛒 버튼 끝 -->
+	    </div><!-- 가격 + 후기건수 + 🛒 버튼 끝 -->
+             
+        <div th:if="${m.pdelifee == 0}" th:text="'무료배송'"></div>
+        
+    </div> <!-- eachPrdCtn 끝 -->
+</div> <!-- allPrdCtn 끝 -->
+
+<br>
+</div>    
+</section>
+<div  th:replace="include/bottom::footer"></div>
+</body>
+</html>
