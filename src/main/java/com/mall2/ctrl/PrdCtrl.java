@@ -104,7 +104,7 @@ public class PrdCtrl {
 	    
 	    //카테고리 리스트
 	    List<PrdVo> ctgrList = prdSvc.ctgrList();
-	    model.addAttribute("ctgrList", ctgrList);	    
+	    model.addAttribute("ctgrList", ctgrList);
 	    
 	    return "prd/prdList4user";
 	}
@@ -205,8 +205,11 @@ public class PrdCtrl {
 	
 	//----------------------------------------------
 	@GetMapping("addPrdForm")
-	public String addPrdForm() {
+	public String addPrdForm(Model model) {
 		System.out.println("addPrdForm");
+		
+		List<PrdVo> ctgrList = prdSvc.ctgrList();
+	    model.addAttribute("ctgrList", ctgrList);
 		
 		return "prd/addPrdForm";
 	}

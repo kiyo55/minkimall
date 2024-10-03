@@ -39,14 +39,13 @@ method="post" enctype="multipart/form-data">
 		<th>분류</th>
 		<td>		
 			<select name="category"  id="categorySelect" required onchange="handleCategoryChange()">                 
-                 <option value="키링">키링</option>
-                 <option value="와펜">와펜</option>
-                 <option value="인형">인형</option>
-                 <option value="포카">포카</option>
-                 <option value="브로치핀">브로치핀</option>
+                 
+                 <option th:each="ctgr : ${ctgrList}"  th:value="${ctgr.category}" th:text="${ctgr.category}">
+                 </option>
+                 
                  <option value="custom">직접입력</option>
              </select>
-             <input name="categoryInput" id="categoryInput" style="display:none;" placeholder="직접입력">
+             <input name="categoryInput" id="categoryInput" style="display:none;" placeholder="새 카테고리...">
 		</td>
 	</tr>
 	
