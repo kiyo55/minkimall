@@ -12,6 +12,4 @@ Libraries: spring web, thymeleaf, mybatis, lombok, dotenv
 
 DB: mariadb
 
-Server: tomcat
-
 API: KakaoMap, KG이니시스 결제대행사
